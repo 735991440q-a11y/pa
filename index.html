@@ -99,7 +99,7 @@
     }
     .card-face {
       position: absolute; inset: 0; display: flex; flex-direction: column; padding: 22px;
-      border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+      border: 1px solid var(--line); border-radius: var(--radius); overflow-x: hidden; overflow-y: auto;
       background:
         linear-gradient(145deg, rgba(18, 42, 72, .96), rgba(10, 28, 49, .98));
       box-shadow: var(--shadow); backface-visibility: hidden; -webkit-backface-visibility: hidden;
@@ -137,7 +137,7 @@
 
     .answer { margin: 24px 0 20px; position: relative; z-index: 1; }
     .answer-label { color: var(--cyan); font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-    .answer p { margin: 10px 0 0; font-size: 1.08rem; line-height: 1.7; }
+    .answer p { margin: 10px 0 0; font-size: 1.08rem; line-height: 1.7; white-space: pre-line; }
     .keywords { margin-top: auto; position: relative; z-index: 1; }
     .keywords span { display: inline-block; margin: 5px 5px 0 0; padding: 5px 9px; border-radius: 9px; background: rgba(114,167,255,.1); color: #a9c7ff; font-size: .76rem; }
 
@@ -224,12 +224,12 @@
           <div class="card-meta"><span class="module-tag" id="moduleFront"></span><span class="priority" id="priorityFront"></span></div>
           <button class="star" id="starFront" aria-label="收藏当前卡片"></button>
           <div class="prompt"><div class="eyebrow" id="topicFront"></div><h2 id="question"></h2><p class="hint" id="hint"></p></div>
-          <p class="tap-hint">轻点卡片 · 查看英文</p>
+          <p class="tap-hint">轻点卡片 · 查看答案</p>
         </div>
         <div class="card-face card-back">
           <div class="card-meta"><span class="module-tag" id="moduleBack"></span><span class="priority" id="priorityBack"></span></div>
           <button class="star" id="starBack" aria-label="收藏当前卡片"></button>
-          <div class="answer"><div class="answer-label">Recommended wording</div><p id="answer"></p></div>
+          <div class="answer"><div class="answer-label">中英对照答案</div><p id="answer"></p></div>
           <div class="keywords" id="keywords"></div>
           <p class="tap-hint">轻点卡片 · 返回题目</p>
         </div>
@@ -263,8 +263,9 @@
     </div>
   </aside>
 
+  <script src="concept-cards.js"></script>
   <script>
-    const cards = [
+    const coreCards = [
       {id:'m1-analytics',m:1,t:'Analytics types',q:'如何区分 descriptive、predictive 和 prescriptive analytics？',h:'过去、未来、行动',a:'Descriptive analytics explains what happened in the past. Predictive analytics estimates what may happen in the future. Prescriptive analytics compares possible actions and helps decide what to do.',k:['past','future','decision'],hi:1},
       {id:'m1-problem',m:1,t:'Predictive problem',q:'一个完整的预测问题需要定义什么？',h:'target、data、metric、business use',a:'A predictive modeling problem needs a clear target, useful predictor data, a model that can be applied to new data, and a performance measure linked to the business goal.',k:['target','predictors','unseen data'],hi:0},
       {id:'m1-bv',m:1,t:'Bias–variance trade-off',q:'如何解释 bias–variance trade-off？',h:'underfit 与 overfit',a:'A simple model may have high bias and underfit the data. A very complex model may have high variance and overfit the training data. We should choose the complexity that gives the best performance on unseen data.',k:['bias','variance','complexity'],hi:1},
@@ -339,8 +340,9 @@
       {id:'m5-pdplimit',m:5,t:'PDP limitation',q:'predictors 高度相关时 PDP 有什么问题？',h:'不现实的变量组合',a:'If predictors are strongly correlated, the PDP may use unrealistic combinations of predictor values. The result should therefore be interpreted with care.',k:['correlated','unrealistic','care'],hi:1},
       {id:'m5-outlier',m:5,t:'Trees and outliers',q:'为什么树对 predictor outlier 相对稳健？',h:'基于排序和 split，但并非完全免疫',a:'Trees use split rules based mainly on the order of predictor values. An extreme value can often be isolated in a small node, but it may still create an unstable split.',k:['order','isolate','unstable split'],hi:0}
     ];
+    const cards = [...coreCards, ...conceptCards];
 
-    const labels = {1:'M1 · Problem',2:'M2 · Data',3:'M3 · Transform',4:'M4 · GLM',5:'M5 · Trees'};
+    const labels = {1:'M1 · Problem',2:'M2 · Data',3:'M3 · Transform',4:'M4 · GLM',5:'M5 · Trees',6:'其他'};
     const state = {
       module: 0, high: false, query: '', view: 'all', index: 0, flipped: false,
       saved: new Set(JSON.parse(localStorage.getItem('pa-saved') || '[]')),
@@ -354,7 +356,7 @@
     function filtered() {
       const order = new Map(state.order.map((id,i) => [id,i]));
       return cards.filter(c => {
-        const hay = `${c.q} ${c.a} ${c.t} ${c.k.join(' ')}`.toLowerCase();
+        const hay = `${c.q} ${c.h} ${c.a} ${c.t} ${c.k.join(' ')}`.toLowerCase();
         return (!state.module || c.m === state.module) && (!state.high || c.hi) &&
           (!state.query || hay.includes(state.query)) &&
           (state.view === 'all' || (state.view === 'saved' && state.saved.has(c.id)) || (state.view === 'review' && !state.learned.has(c.id)));
@@ -389,8 +391,9 @@
       $('card').classList.toggle('flipped', state.flipped);
       $('moduleFront').textContent = labels[c.m];
       $('moduleBack').textContent = labels[c.m];
-      $('priorityFront').textContent = c.hi ? '★ 高频' : '';
-      $('priorityBack').textContent = c.hi ? '★ 高频' : '';
+      const badge = c.kind === 'concept' ? '概念题' : (c.hi ? '★ 高频' : '');
+      $('priorityFront').textContent = badge;
+      $('priorityBack').textContent = badge;
       $('topicFront').textContent = c.t;
       $('question').textContent = c.q;
       $('hint').textContent = c.h;
@@ -402,7 +405,7 @@
         $(id).setAttribute('aria-pressed', state.saved.has(c.id));
       });
       $('remember').textContent = state.learned.has(c.id) ? '已记住 ✓' : '记住了';
-      $('modeNote').textContent = state.view === 'review' ? `还有 ${list.length} 张待复习` : '点卡片查看推荐英文';
+      $('modeNote').textContent = state.view === 'review' ? `还有 ${list.length} 张待复习` : `共 ${list.length} 张 · 点卡片看答案`;
     }
 
     function move(step) {
