@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#071426">
+  <meta name="description" content="Exam PA 2026 移动端英文答题卡片，按考纲模块背诵。">
+  <title>PA Pocket · 2026</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23071426'/%3E%3Cpath d='M17 46V18h17c9 0 14 5 14 13s-5 13-14 13H25v2h-8zm8-10h8c5 0 7-2 7-5s-2-5-7-5h-8v10z' fill='%235eead4'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #071426;
+      --surface: #0d2038;
+      --surface-2: #122a48;
+      --line: rgba(148, 184, 218, .2);
+      --text: #f5f9ff;
+      --muted: #9fb4ca;
+      --cyan: #5eead4;
+      --blue: #72a7ff;
+      --amber: #ffc967;
+      --danger: #ff8f9c;
+      --shadow: 0 22px 55px rgba(0, 4, 15, .32);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 90% -10%, rgba(45, 125, 210, .28), transparent 35rem),
+        linear-gradient(180deg, #071426 0%, #081829 52%, #06111f 100%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    .app { width: min(100%, 840px); margin: 0 auto; padding: 18px 16px calc(108px + env(safe-area-inset-bottom)); }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .mark {
+      display: grid; place-items: center; width: 42px; height: 42px;
+      border-radius: 14px; color: #06111f; background: var(--cyan); font-weight: 900;
+      box-shadow: 0 9px 28px rgba(94, 234, 212, .22);
+    }
+    .brand h1 { margin: 0; font-size: 1.1rem; letter-spacing: .02em; }
+    .brand p { margin: 1px 0 0; color: var(--muted); font-size: .78rem; }
+    .counter { color: var(--muted); font-size: .86rem; white-space: nowrap; }
+    .counter strong { color: var(--text); font-variant-numeric: tabular-nums; }
+
+    .progress-shell { height: 5px; background: rgba(255,255,255,.08); border-radius: 999px; overflow: hidden; margin-bottom: 18px; }
+    .progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--cyan), var(--blue)); transition: width .25s ease; }
+
+    .toolbar { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 12px; }
+    .search-wrap { position: relative; }
+    .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; color: var(--muted); pointer-events: none; }
+    .search {
+      width: 100%; min-height: 46px; padding: 0 14px 0 42px; color: var(--text);
+      background: rgba(13, 32, 56, .78); border: 1px solid var(--line); border-radius: 15px; outline: none;
+    }
+    .search:focus { border-color: rgba(94,234,212,.72); box-shadow: 0 0 0 3px rgba(94,234,212,.1); }
+    .icon-btn {
+      width: 46px; min-height: 46px; display: grid; place-items: center; border: 1px solid var(--line);
+      border-radius: 15px; color: var(--muted); background: rgba(13, 32, 56, .78); cursor: pointer;
+    }
+    .icon-btn.active { color: #071426; background: var(--amber); border-color: var(--amber); }
+    .icon-btn svg { width: 20px; }
+
+    .filters { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 12px; scrollbar-width: none; }
+    .filters::-webkit-scrollbar { display: none; }
+    .chip {
+      flex: 0 0 auto; min-height: 38px; padding: 7px 13px; border: 1px solid var(--line); border-radius: 999px;
+      color: var(--muted); background: rgba(13, 32, 56, .62); cursor: pointer; font-size: .88rem;
+    }
+    .chip.active { color: #06111f; background: var(--cyan); border-color: var(--cyan); font-weight: 750; }
+
+    .mode-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 1px 14px; }
+    .mode-note { color: var(--muted); font-size: .82rem; }
+    .text-btn { color: var(--cyan); background: transparent; border: 0; padding: 7px 0; cursor: pointer; font-weight: 700; }
+
+    .card-stage { perspective: 1200px; min-height: 440px; }
+    .card {
+      position: relative; width: 100%; min-height: 440px; border-radius: var(--radius);
+      transform-style: preserve-3d; transition: transform .52s cubic-bezier(.2,.75,.2,1); cursor: pointer;
+      outline: none;
+    }
+    .card.flipped { transform: rotateY(180deg); }
+    .card-face {
+      position: absolute; inset: 0; display: flex; flex-direction: column; padding: 22px;
+      border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+      background:
+        linear-gradient(145deg, rgba(18, 42, 72, .96), rgba(10, 28, 49, .98));
+      box-shadow: var(--shadow); backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    }
+    .card-face::after {
+      content: ""; position: absolute; width: 190px; height: 190px; right: -80px; bottom: -90px;
+      border-radius: 50%; background: rgba(94, 234, 212, .06); pointer-events: none;
+    }
+    .card-back { transform: rotateY(180deg); background: linear-gradient(145deg, #102a45, #0a2037); }
+    .card-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; position: relative; z-index: 1; }
+    .module-tag { color: var(--cyan); font-size: .76rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .priority { color: var(--amber); font-size: .76rem; font-weight: 750; }
+    .star {
+      display: grid; place-items: center; width: 39px; height: 39px; margin-left: auto; border: 0;
+      border-radius: 13px; color: var(--muted); background: rgba(255,255,255,.06); cursor: pointer; position: relative; z-index: 2;
+    }
+    .star.saved { color: var(--amber); background: rgba(255,201,103,.12); }
+    .star svg { width: 19px; }
+    .prompt { margin: auto 0; position: relative; z-index: 1; }
+    .prompt .eyebrow { color: var(--muted); font-size: .83rem; margin-bottom: 12px; }
+    .prompt h2 { margin: 0; font-size: clamp(1.45rem, 5vw, 2.15rem); line-height: 1.34; letter-spacing: -.02em; }
+    .prompt .hint { margin: 18px 0 0; color: var(--muted); font-size: .94rem; }
+    .tap-hint { margin: 0; text-align: center; color: #7893ad; font-size: .78rem; position: relative; z-index: 1; }
+
+    .answer { margin: 24px 0 20px; position: relative; z-index: 1; }
+    .answer-label { color: var(--cyan); font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .answer p { margin: 10px 0 0; font-size: 1.08rem; line-height: 1.7; }
+    .keywords { margin-top: auto; position: relative; z-index: 1; }
+    .keywords span { display: inline-block; margin: 5px 5px 0 0; padding: 5px 9px; border-radius: 9px; background: rgba(114,167,255,.1); color: #a9c7ff; font-size: .76rem; }
+
+    .actions { display: grid; grid-template-columns: 1fr 1.35fr 1fr; gap: 10px; margin-top: 14px; }
+    .action {
+      min-height: 50px; border-radius: 16px; border: 1px solid var(--line); color: var(--text);
+      background: rgba(13,32,56,.86); cursor: pointer; font-weight: 750;
+    }
+    .action.primary { color: #06111f; background: var(--cyan); border-color: var(--cyan); }
+    .action:disabled { opacity: .4; cursor: not-allowed; }
+
+    .empty { display: none; min-height: 360px; place-items: center; text-align: center; padding: 32px; border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); }
+    .empty strong { color: var(--text); display: block; margin-bottom: 6px; font-size: 1.05rem; }
+
+    .sheet {
+      position: fixed; inset: auto 0 0; z-index: 20; display: none; max-height: 82dvh; overflow: auto;
+      padding: 18px 16px calc(24px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line);
+      border-radius: 24px 24px 0 0; background: #0a1a2d; box-shadow: 0 -20px 70px rgba(0,0,0,.5);
+    }
+    .sheet.open { display: block; }
+    .sheet-inner { width: min(100%, 808px); margin: 0 auto; }
+    .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .sheet h2 { margin: 0; font-size: 1.18rem; }
+    .close { width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 13px; color: var(--text); background: var(--surface); cursor: pointer; }
+    .template { padding: 16px; margin-bottom: 10px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+    .template strong { color: var(--cyan); }
+    .template p { margin: 8px 0 0; color: #dce8f5; }
+
+    .backdrop { position: fixed; inset: 0; z-index: 19; display: none; background: rgba(0,5,14,.68); backdrop-filter: blur(3px); }
+    .backdrop.open { display: block; }
+
+    .bottom-nav {
+      position: fixed; left: 50%; bottom: calc(10px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 10;
+      display: flex; gap: 6px; width: min(calc(100% - 24px), 510px); padding: 7px; border: 1px solid var(--line);
+      border-radius: 19px; background: rgba(7,20,38,.9); box-shadow: 0 14px 40px rgba(0,0,0,.36); backdrop-filter: blur(18px);
+    }
+    .nav-btn { flex: 1; min-height: 48px; border: 0; border-radius: 14px; color: var(--muted); background: transparent; cursor: pointer; font-size: .78rem; }
+    .nav-btn.active { color: var(--cyan); background: rgba(94,234,212,.09); }
+    .nav-btn svg { display: block; width: 19px; margin: 0 auto 2px; }
+
+    @media (min-width: 700px) {
+      .app { padding-top: 28px; }
+      .card-stage, .card { min-height: 470px; }
+      .card-face { padding: 30px; }
+      .actions { width: 75%; margin-left: auto; margin-right: auto; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">PA</div>
+        <div><h1>PA Pocket</h1><p>2026 · 简单英文答题卡</p></div>
+      </div>
+      <div class="counter"><strong id="position">1</strong> / <span id="total">0</span></div>
+    </header>
+
+    <div class="progress-shell" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
+
+    <section class="toolbar" aria-label="查找卡片">
+      <label class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input class="search" id="search" type="search" placeholder="搜索：PCA、overfitting、残差…" autocomplete="off">
+      </label>
+      <button class="icon-btn" id="highOnly" aria-label="只看高频卡片" title="只看高频">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 2.6 5.3 5.9.9-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.2 5.9-.9L12 3Z"/></svg>
+      </button>
+    </section>
+
+    <div class="filters" id="filters" aria-label="按模块筛选"></div>
+
+    <div class="mode-row">
+      <span class="mode-note" id="modeNote">点卡片查看推荐英文</span>
+      <button class="text-btn" id="shuffle">随机顺序</button>
+    </div>
+
+    <section class="card-stage" id="cardStage">
+      <article class="card" id="card" tabindex="0" role="button" aria-label="学习卡片，点按翻面">
+        <div class="card-face card-front">
+          <div class="card-meta"><span class="module-tag" id="moduleFront"></span><span class="priority" id="priorityFront"></span></div>
+          <button class="star" id="starFront" aria-label="收藏当前卡片"></button>
+          <div class="prompt"><div class="eyebrow" id="topicFront"></div><h2 id="question"></h2><p class="hint" id="hint"></p></div>
+          <p class="tap-hint">轻点卡片 · 查看英文</p>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-meta"><span class="module-tag" id="moduleBack"></span><span class="priority" id="priorityBack"></span></div>
+          <button class="star" id="starBack" aria-label="收藏当前卡片"></button>
+          <div class="answer"><div class="answer-label">Recommended wording</div><p id="answer"></p></div>
+          <div class="keywords" id="keywords"></div>
+          <p class="tap-hint">轻点卡片 · 返回题目</p>
+        </div>
+      </article>
+      <div class="empty" id="empty"><div><strong>没有找到卡片</strong>换一个关键词或清除筛选条件。</div></div>
+    </section>
+
+    <div class="actions">
+      <button class="action" id="prev">上一张</button>
+      <button class="action primary" id="remember">记住了</button>
+      <button class="action" id="next">下一张</button>
+    </div>
+  </main>
+
+  <nav class="bottom-nav" aria-label="学习视图">
+    <button class="nav-btn active" data-view="all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>全部</button>
+    <button class="nav-btn" data-view="saved"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 2.6 5.3 5.9.9-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.2 5.9-.9L12 3Z"/></svg>收藏</button>
+    <button class="nav-btn" data-view="review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12a8 8 0 1 1-2.3-5.7L20 8"/><path d="M20 3v5h-5"/></svg>待复习</button>
+    <button class="nav-btn" data-view="templates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>模板</button>
+  </nav>
+
+  <div class="backdrop" id="backdrop"></div>
+  <aside class="sheet" id="sheet" aria-label="万能答题模板">
+    <div class="sheet-inner">
+      <div class="sheet-head"><h2>万能答题模板</h2><button class="close" id="closeSheet" aria-label="关闭">×</button></div>
+      <div class="template"><strong>Recommend</strong><p>I recommend [method] because [reason]. The result shows [evidence]. This choice supports the business goal of [goal].</p></div>
+      <div class="template"><strong>Compare</strong><p>Both methods [similarity]. However, A [feature], while B [different feature]. I would use A/B when [condition].</p></div>
+      <div class="template"><strong>Interpret</strong><p>The plot shows that Y generally increases/decreases as X increases. The relationship is [linear/non-linear]. This suggests that [meaning].</p></div>
+      <div class="template"><strong>Critique</strong><p>The main issue is [issue]. This may lead to [bad result]. I recommend [fix] so that [benefit].</p></div>
+      <div class="template"><strong>Limitation</strong><p>A limitation is [limitation]. Therefore, the result should be checked on new data before it is used for a final decision.</p></div>
+    </div>
+  </aside>
+
+  <script>
+    const cards = [
+      {id:'m1-analytics',m:1,t:'Analytics types',q:'如何区分 descriptive、predictive 和 prescriptive analytics？',h:'过去、未来、行动',a:'Descriptive analytics explains what happened in the past. Predictive analytics estimates what may happen in the future. Prescriptive analytics compares possible actions and helps decide what to do.',k:['past','future','decision'],hi:1},
+      {id:'m1-problem',m:1,t:'Predictive problem',q:'一个完整的预测问题需要定义什么？',h:'target、data、metric、business use',a:'A predictive modeling problem needs a clear target, useful predictor data, a model that can be applied to new data, and a performance measure linked to the business goal.',k:['target','predictors','unseen data'],hi:0},
+      {id:'m1-bv',m:1,t:'Bias–variance trade-off',q:'如何解释 bias–variance trade-off？',h:'underfit 与 overfit',a:'A simple model may have high bias and underfit the data. A very complex model may have high variance and overfit the training data. We should choose the complexity that gives the best performance on unseen data.',k:['bias','variance','complexity'],hi:1},
+      {id:'m1-overfit',m:1,t:'Overfitting',q:'训练误差低、测试误差高说明什么？',h:'用一句稳妥的结论',a:'The lower training error and higher test error suggest overfitting. The model has learned noise in the training data and does not generalize well.',k:['training error','test error','generalize'],hi:1},
+      {id:'m1-vague',m:1,t:'Problem definition',q:'怎样把模糊业务问题改成可分析的问题？',h:'对象、目标、时间、使用方式',a:'The question should define who or what is being predicted, the target variable, the prediction time, the data available at that time, and how the prediction will be used.',k:['population','target','time period'],hi:1},
+      {id:'m1-feasible',m:1,t:'Feasibility',q:'建模前需要考虑哪些实施因素？',h:'数据、系统、成本、价值',a:'We should check whether the required data is available and reliable, whether the model can be used in the current system, and whether the expected business value is greater than the cost of implementation.',k:['data quality','system','business value'],hi:0},
+
+      {id:'m2-structure',m:2,t:'Data type',q:'如何评价 unstructured data？',h:'优点和缺点各一句',a:'Unstructured data may contain useful details that are not in a table. However, it needs more time and more complex methods to process.',k:['free text','extra information','processing'],hi:1},
+      {id:'m2-numcat',m:2,t:'Numeric vs categorical',q:'同一变量作为 numeric 或 categorical 有什么区别？',h:'假设、参数数量、过拟合',a:'Treating X as numeric uses one coefficient and assumes a simple ordered effect. Treating it as categorical allows a separate effect for each level, but it uses more parameters and may overfit.',k:['one coefficient','separate effect','overfit'],hi:1},
+      {id:'m2-code',m:2,t:'ID-like numbers',q:'为什么 ZIP code 或 cluster number 不应直接作为连续变量？',h:'数字只是标签',a:'The numbers are labels rather than measured amounts. Their order and distance have no clear meaning, so the variable should be treated as categorical.',k:['label','order','distance'],hi:1},
+      {id:'m2-granular',m:2,t:'Granularity',q:'高粒度分类变量有什么问题？',h:'稀疏、新 level、过拟合',a:'This variable has too many levels and very few records in each level. The model may overfit, and new levels may appear in future data. I recommend creating a less granular feature.',k:['many levels','sparse','new levels'],hi:1},
+      {id:'m2-time',m:2,t:'Time frame',q:'如何评价使用较老的数据？',h:'样本量与代表性的权衡',a:'Older data provides more observations, but it may not represent current conditions. I would check for changes over time and use a period that is both large enough and relevant to future predictions.',k:['older data','representative','future'],hi:0},
+      {id:'m2-strata',m:2,t:'Stratified sampling',q:'如何描述 stratified sampling 的步骤？',h:'分组、抽样、合并',a:'First, divide the data into groups based on important variables. Next, take a random sample from each group. Finally, combine the samples. This keeps important groups represented.',k:['strata','random sample','representative'],hi:1},
+      {id:'m2-balance',m:2,t:'Class balance',q:'oversampling 和 undersampling 如何比较？',h:'少数类与多数类',a:'Oversampling adds or repeats minority-class records. Undersampling removes some majority-class records. Both can improve class balance, but sampling must be done only on the training data.',k:['minority class','majority class','training data'],hi:1},
+      {id:'m2-leak',m:2,t:'Data leakage',q:'为什么要先 split 再 oversample？',h:'相同记录不能进 train 和 test',a:'The data should be split before oversampling. Otherwise, copies of the same record may appear in both the training and test sets, causing data leakage and an overly positive test result.',k:['split first','duplicates','optimistic result'],hi:1},
+      {id:'m2-bar',m:2,t:'Graph design',q:'为什么 bar chart 通常比 pie chart 更容易比较？',h:'position、length、angle、area',a:'I recommend the bar chart because people can compare position and length on a common scale more accurately than angle or area in a pie chart.',k:['common scale','length','angle'],hi:1},
+      {id:'m2-detail',m:2,t:'Graph granularity',q:'详细图和汇总图各有什么优点？',h:'detail 与 noise',a:'The more granular graph shows detailed changes within each group. The summarized graph has less noise and makes the overall pattern easier to see.',k:['granular','detail','less noise'],hi:0},
+      {id:'m2-skew',m:2,t:'Univariate exploration',q:'mean 大于 median 通常说明什么？',h:'right-skew',a:'The mean is higher than the median, which suggests a right-skewed distribution. A small number of high values pull the mean to the right.',k:['mean','median','right-skew'],hi:1},
+      {id:'m2-bi',m:2,t:'Bivariate graph',q:'两个连续变量应推荐什么图？',h:'direction、shape、outlier',a:'I recommend a scatterplot because both variables are numeric. It can show the direction, strength, shape, and possible outliers in the relationship.',k:['scatterplot','numeric','outlier'],hi:0},
+      {id:'m2-third',m:2,t:'Confounding pattern',q:'怀疑第三个变量影响相关性时怎么做？',h:'控制 Z 或分组查看',a:'The observed relationship may be affected by Z, which is related to both variables. I recommend examining the relationship between X and Y within groups of Z.',k:['third variable','within groups','relationship'],hi:1},
+      {id:'m2-smooth',m:2,t:'Smoothing',q:'什么时候不应加入 smoothed line？',h:'不能隐藏业务上重要的峰值',a:'I do not recommend the smoothed line because it hides important peaks in the original plot. These peaks may be important for the business decision.',k:['hide peaks','misleading','decision'],hi:0},
+
+      {id:'m3-feature',m:3,t:'Feature creation',q:'variable 和 feature 有什么区别？',h:'原始字段与模型输入',a:'A variable is a field in the original data. A feature is a model input and may be created from one or more variables. Feature creation can make an important pattern easier for the model to use.',k:['raw variable','model input','pattern'],hi:0},
+      {id:'m3-log',m:3,t:'Log transformation',q:'何时推荐 log transformation？',h:'正值、右偏、极端值',a:'I recommend a log transformation because the variable is positive and has a long right tail. It reduces skewness and the effect of extreme values. A drawback is harder interpretation.',k:['positive','right tail','extreme values'],hi:1},
+      {id:'m3-dummy',m:3,t:'Binarization',q:'如何把分类变量变成 dummy variables？',h:'base level 与 0/1',a:'Choose one category as the base level. For each other category, create a 0/1 indicator. Each coefficient compares that category with the base level.',k:['base level','indicator','0/1'],hi:0},
+      {id:'m3-scale',m:3,t:'Standardization',q:'为什么 PCA、K-means 和 regularization 前要标准化？',h:'距离、方差、惩罚都受量纲影响',a:'Standardization puts variables on a common scale. This is important because these methods depend on distance, variance, or coefficient size.',k:['same scale','distance','coefficient size'],hi:1},
+      {id:'m3-pca',m:3,t:'PCA',q:'一句话解释 PCA 的目的和适用场景。',h:'相关变量、少数组件、降维',a:'PCA creates uncorrelated components from the original variables. It is useful when many predictors are strongly correlated and a few components explain most of the total variance.',k:['uncorrelated','components','dimension reduction'],hi:1},
+      {id:'m3-load',m:3,t:'PCA loadings',q:'如何解释 loading？',h:'大小表示贡献，方向表示关系',a:'A large positive or negative loading means that the original variable has a strong effect on the component. Variables with loadings in the same direction move together in that component.',k:['loading','direction','contribution'],hi:1},
+      {id:'m3-scree',m:3,t:'Scree plot',q:'如何用 scree plot 选择 components？',h:'elbow 和 explained variance',a:'I would keep the components before the elbow because later components add little explained variance. I would also check that the chosen components explain enough total variance.',k:['elbow','explained variance','components'],hi:1},
+      {id:'m3-nopca',m:3,t:'PCA limitation',q:'什么时候不推荐 PCA？',h:'相关性弱、降维少、解释性损失',a:'I do not recommend PCA because the variables are not strongly correlated and several components are needed. The small reduction in dimension does not make up for the loss of interpretation.',k:['weak correlation','interpretation','little reduction'],hi:1},
+      {id:'m3-kmeans',m:3,t:'K-means',q:'怎样简单描述 K-means？',h:'centroid、nearest、repeat',a:'K-means assigns each observation to the nearest cluster center and updates the centers until the groups stop changing. The value of K must be chosen before fitting.',k:['centroid','nearest','K'],hi:0},
+      {id:'m3-wcss',m:3,t:'WCSS',q:'如何正确计算 within-cluster sum of squares？',h:'不要把平方距离再平方',a:'For each observation, calculate the squared distance to its cluster center. Then add these squared distances across all observations.',k:['squared distance','centroid','sum'],hi:1},
+      {id:'m3-choosek',m:3,t:'Choose K',q:'如何根据 elbow 推荐 K？',h:'variance 与 complexity 的权衡',a:'A larger K lowers within-cluster variation but creates a more complex result. I recommend K at the elbow because larger values give only a small additional improvement.',k:['elbow','variation','complexity'],hi:1},
+      {id:'m3-hier',m:3,t:'Hierarchical clustering',q:'K-means 与 hierarchical clustering 如何比较？',h:'K in advance、dendrogram、linkage',a:'Both methods group similar observations. K-means needs K in advance and uses cluster centers. Hierarchical clustering uses a linkage rule and shows several possible solutions in a dendrogram.',k:['dendrogram','linkage','K in advance'],hi:1},
+      {id:'m3-targetleak',m:3,t:'Clustering leakage',q:'为什么不能用 target 创建 cluster 后再预测同一 target？',h:'预测时偷看答案',a:'The target must not be used to create a cluster that will later predict the same target. This is data leakage and will make model performance look too good.',k:['target','cluster','data leakage'],hi:1},
+
+      {id:'m4-select',m:4,t:'GLM selection',q:'正值且右偏的连续 target 常用什么 GLM？',h:'gamma + log link',a:'I recommend a gamma GLM with a log link because the target is positive and right-skewed, and its variance increases with its mean. The log link keeps the predicted mean positive.',k:['gamma','log link','positive'],hi:1},
+      {id:'m4-assume',m:4,t:'GLM assumptions',q:'如何描述 GLM 的核心假设？',h:'independence、family、link',a:'A GLM assumes independent observations, a response distribution from the exponential family, and a link function that connects the expected response to a linear combination of predictors.',k:['independent','exponential family','link'],hi:1},
+      {id:'m4-normal',m:4,t:'Residual assumptions',q:'所有 GLM 都要求正态、等方差残差吗？',h:'这是常见陷阱',a:'No. Normal residuals and constant residual variance are assumptions for a normal linear model, not for every GLM. Diagnostics should be judged under the selected distribution and link.',k:['normal model','GLM','diagnostics'],hi:1},
+      {id:'m4-id',m:4,t:'Identity link',q:'如何解释 identity-link 模型的连续变量系数？',h:'holding other variables constant',a:'Holding other variables constant, a one-unit increase in X changes the expected value of Y by beta units.',k:['identity link','one unit','expected value'],hi:1},
+      {id:'m4-loglink',m:4,t:'Log link coefficient',q:'如何解释 log-link 模型的系数？',h:'exp(beta)',a:'Holding other variables constant, a one-unit increase in X multiplies the expected value of Y by exp(beta). This is about a 100 × (exp(beta) − 1)% change.',k:['log link','exp(beta)','multiplicative'],hi:1},
+      {id:'m4-logit',m:4,t:'Logit coefficient',q:'如何解释 logistic regression 的系数？',h:'odds ratio',a:'Holding other variables constant, a one-unit increase in X multiplies the odds of the event by exp(beta).',k:['logit','odds','exp(beta)'],hi:1},
+      {id:'m4-interact',m:4,t:'Interaction',q:'如何解释 interaction term？',h:'X 的 effect 取决于 Z',a:'The interaction allows the effect of X to depend on Z. Without the interaction, the model uses the same slope for every group. With the interaction, each group can have a different slope.',k:['depends on','different slope','group'],hi:1},
+      {id:'m4-col',m:4,t:'Multicollinearity',q:'multicollinearity 有什么后果？',h:'系数不稳定、标准误增大',a:'Multicollinearity can make coefficient estimates unstable and increase their standard errors. The sign, size, and significance of individual coefficients become harder to interpret.',k:['unstable','standard error','interpretation'],hi:1},
+      {id:'m4-resid',m:4,t:'Residuals vs fitted',q:'residuals-versus-fitted plot 应看什么？',h:'center、trend、spread',a:'Residuals should be centered around zero with no clear pattern. A curved pattern suggests missing non-linearity. A changing spread suggests that the variance structure may be wrong.',k:['zero','curve','changing spread'],hi:1},
+      {id:'m4-leverage',m:4,t:'Leverage',q:'如何处理 high-leverage point？',h:'先检查，不要自动删除',a:'Points with high leverage and large residuals may strongly affect coefficient estimates. Check them for data errors and whether they represent the population. Do not remove them only because they are unusual.',k:['leverage','influential','check data'],hi:1},
+      {id:'m4-logcompare',m:4,t:'Log Y vs log link',q:'log(Y) linear model 与 log-link GLM 有什么区别？',h:'变换 target 与建模 mean',a:'A model on log(Y) models the transformed response and assumes constant variance on the log scale. A GLM with a log link models the mean of Y on its original scale and lets variance depend on the mean.',k:['log response','log link','variance'],hi:1},
+      {id:'m4-offset',m:4,t:'Offset',q:'offset 是什么？',h:'固定系数为 1',a:'An offset enters the linear predictor with its coefficient fixed at 1. It is used when the effect is known, such as log exposure in a frequency model.',k:['fixed coefficient','exposure','linear predictor'],hi:1},
+      {id:'m4-weight',m:4,t:'Weight vs predictor',q:'weight 与 predictor 有什么区别？',h:'影响拟合 vs 进入预测公式',a:'A weight changes how much an observation affects model fitting, and no coefficient is estimated for it. A predictor enters the prediction formula, and the model estimates its coefficient.',k:['influence','model fitting','coefficient'],hi:1},
+      {id:'m4-step',m:4,t:'Backward selection',q:'怎样描述 backward selection？',h:'full model、remove、refit、stop',a:'Backward selection starts with the full model. At each step, remove the predictor that best improves the chosen criterion, refit the model, and repeat until no further improvement is found.',k:['full model','remove','refit'],hi:0},
+      {id:'m4-ridge',m:4,t:'Ridge',q:'ridge 的特点是什么？',h:'L2、保留全部变量、相关预测变量',a:'Ridge uses a squared-coefficient penalty. It shrinks coefficients toward zero but normally does not set them exactly to zero, so it keeps all predictors.',k:['L2','shrink','keep predictors'],hi:1},
+      {id:'m4-lasso',m:4,t:'Lasso',q:'lasso 的特点是什么？',h:'L1、系数可为 0、变量选择',a:'Lasso uses an absolute-value penalty. It can set some coefficients exactly to zero, so it performs variable selection and may give a simpler model.',k:['L1','zero','variable selection'],hi:1},
+      {id:'m4-elastic',m:4,t:'Elastic net',q:'elastic net 有什么作用？',h:'ridge + lasso',a:'Elastic net combines ridge and lasso penalties. It can select variables while handling groups of correlated predictors more smoothly than lasso alone.',k:['ridge','lasso','correlated predictors'],hi:0},
+      {id:'m4-alpha',m:4,t:'Alpha and lambda',q:'alpha 和 lambda 分别控制什么？',h:'mix 与 strength',a:'Lambda controls the strength of the penalty. Alpha controls the mix: alpha = 0 is ridge, alpha = 1 is lasso, and values between 0 and 1 give elastic net.',k:['alpha','lambda','penalty'],hi:1},
+      {id:'m4-cv',m:4,t:'Cross-validation',q:'如何用 CV 调 regularization 参数？',h:'grid、folds、mean error、untouched test',a:'Choose a grid of parameter values and use k-fold cross-validation on the training data. Select the values with the best mean validation result, then evaluate the final model once on the untouched test set.',k:['grid','k-fold','test once'],hi:1},
+      {id:'m4-aic',m:4,t:'AIC vs validation',q:'AIC 与 validation metric 如何比较？',h:'训练拟合代理 vs 未见数据表现',a:'AIC balances training fit and model complexity, but it is still based on training data. Validation or cross-validation gives a more direct measure of performance on unseen data.',k:['AIC','complexity','unseen data'],hi:1},
+      {id:'m4-mae',m:4,t:'RMSE vs MAE',q:'target 有 outliers 时推荐 RMSE 还是 MAE？',h:'平方误差更受极端值影响',a:'I recommend MAE because it is more robust to outliers. RMSE gives more weight to large errors because the errors are squared.',k:['RMSE','MAE','outliers'],hi:1},
+
+      {id:'m5-classreg',m:5,t:'Tree type',q:'classification tree 与 regression tree 的 impurity 有何不同？',h:'Gini/entropy vs squared error',a:'A classification tree predicts a class and uses measures such as Gini impurity or entropy. A regression tree predicts a numeric value and chooses splits that reduce squared error.',k:['classification','regression','impurity'],hi:1},
+      {id:'m5-impurity',m:5,t:'Tree split',q:'怎样选择一个好的分类树 split？',h:'weighted impurity reduction',a:'Calculate impurity in each child node, weight it by the child-node size, and choose the split with the largest decrease from the parent-node impurity.',k:['child node','weighted','decrease'],hi:0},
+      {id:'m5-cp',m:5,t:'Complexity parameter',q:'降低 cp 会怎样影响树？',h:'约束放松、更多 splits、过拟合风险',a:'A lower cp relaxes the minimum improvement required for a split. The tree will usually become larger, with more splits and a higher risk of overfitting.',k:['cp','larger tree','overfitting'],hi:1},
+      {id:'m5-prune',m:5,t:'Control overfitting',q:'树过拟合时如何调参数？',h:'cp、minsplit、minbucket、maxdepth',a:'Increase cp or minsplit, increase minbucket, or reduce maxdepth. Each change limits small splits and creates a simpler tree.',k:['cp','minsplit','maxdepth'],hi:1},
+      {id:'m5-cptable',m:5,t:'CP table',q:'如何用 xerror 选择 cp？',h:'最低 CV error 或 one-SE rule',a:'Cross-validation error may first fall and then rise as the tree grows. Choose the cp with the lowest cross-validation error, or use the one-standard-error rule for a simpler tree.',k:['xerror','cross-validation','one-SE'],hi:1},
+      {id:'m5-cutoff',m:5,t:'Classification cutoff',q:'降低 cutoff 会怎样？',h:'sensitivity 上升、specificity 下降',a:'Lowering the cutoff creates more positive predictions. It usually increases sensitivity but decreases specificity and may reduce precision.',k:['cutoff','sensitivity','specificity'],hi:1},
+      {id:'m5-imbalance',m:5,t:'Imbalanced data',q:'为什么不平衡数据中 accuracy 可能误导？',h:'全猜多数类也可很高',a:'A model may have high accuracy simply by predicting the majority class. Sensitivity, specificity, precision, and AUC should also be reviewed.',k:['majority class','accuracy','sensitivity'],hi:1},
+      {id:'m5-roc',m:5,t:'ROC and AUC',q:'如何解释 ROC 和 AUC？',h:'all thresholds 与总体排序能力',a:'The ROC curve plots sensitivity against the false positive rate over many cutoffs. AUC summarizes how well the model ranks positive cases above negative cases.',k:['ROC','AUC','cutoff'],hi:1},
+      {id:'m5-ensemble',m:5,t:'Single tree vs ensemble',q:'single tree 与 ensemble 如何比较？',h:'解释性 vs 稳定性',a:'A single tree is easy to explain but can have high variance. Ensemble methods combine many trees and usually give more stable predictions, but they are harder to explain.',k:['high variance','many trees','interpretation'],hi:1},
+      {id:'m5-rf',m:5,t:'Random forest',q:'random forest 如何改进 bagging？',h:'随机变量子集降低树间相关性',a:'Bagging fits trees on bootstrap samples and averages their predictions. A random forest also tests a random subset of predictors at each split, making the trees less similar and reducing variance.',k:['bootstrap','feature subset','variance'],hi:1},
+      {id:'m5-boost',m:5,t:'Boosting',q:'如何描述 boosting？',h:'sequential、prior errors、learning rate',a:'Boosting builds trees in sequence. Each new tree focuses on errors left by earlier trees. A high learning rate or too many complex trees may overfit.',k:['sequential','learning rate','overfit'],hi:1},
+      {id:'m5-importance',m:5,t:'Feature importance',q:'feature importance 能说明什么、不能说明什么？',h:'排名，不给方向，不代表因果',a:'Feature importance ranks how useful each variable is to the fitted model. It does not show whether the effect is positive or negative, and it does not prove causation.',k:['rank','no direction','not causal'],hi:1},
+      {id:'m5-pdp',m:5,t:'Partial dependence',q:'PDP 表示什么？',h:'改变一个 feature 后的平均预测',a:'A partial dependence plot shows how the model’s average prediction changes as one feature is varied over a grid. It shows the direction and shape of the fitted relationship.',k:['average prediction','grid','shape'],hi:1},
+      {id:'m5-pdplimit',m:5,t:'PDP limitation',q:'predictors 高度相关时 PDP 有什么问题？',h:'不现实的变量组合',a:'If predictors are strongly correlated, the PDP may use unrealistic combinations of predictor values. The result should therefore be interpreted with care.',k:['correlated','unrealistic','care'],hi:1},
+      {id:'m5-outlier',m:5,t:'Trees and outliers',q:'为什么树对 predictor outlier 相对稳健？',h:'基于排序和 split，但并非完全免疫',a:'Trees use split rules based mainly on the order of predictor values. An extreme value can often be isolated in a small node, but it may still create an unstable split.',k:['order','isolate','unstable split'],hi:0}
+    ];
+
+    const labels = {1:'M1 · Problem',2:'M2 · Data',3:'M3 · Transform',4:'M4 · GLM',5:'M5 · Trees'};
+    const state = {
+      module: 0, high: false, query: '', view: 'all', index: 0, flipped: false,
+      saved: new Set(JSON.parse(localStorage.getItem('pa-saved') || '[]')),
+      learned: new Set(JSON.parse(localStorage.getItem('pa-learned') || '[]')),
+      order: cards.map(c => c.id)
+    };
+
+    const $ = id => document.getElementById(id);
+    const starIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 2.6 5.3 5.9.9-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.2 5.9-.9L12 3Z"/></svg>';
+
+    function filtered() {
+      const order = new Map(state.order.map((id,i) => [id,i]));
+      return cards.filter(c => {
+        const hay = `${c.q} ${c.a} ${c.t} ${c.k.join(' ')}`.toLowerCase();
+        return (!state.module || c.m === state.module) && (!state.high || c.hi) &&
+          (!state.query || hay.includes(state.query)) &&
+          (state.view === 'all' || (state.view === 'saved' && state.saved.has(c.id)) || (state.view === 'review' && !state.learned.has(c.id)));
+      }).sort((a,b) => order.get(a.id)-order.get(b.id));
+    }
+
+    function saveLocal() {
+      localStorage.setItem('pa-saved', JSON.stringify([...state.saved]));
+      localStorage.setItem('pa-learned', JSON.stringify([...state.learned]));
+    }
+
+    function renderFilters() {
+      const items = [[0,'全部'],[1,'M1'],[2,'M2'],[3,'M3'],[4,'M4 · GLM'],[5,'M5']];
+      $('filters').innerHTML = items.map(([value,label]) => `<button class="chip ${state.module===value?'active':''}" data-module="${value}">${label}</button>`).join('');
+    }
+
+    function render() {
+      const list = filtered();
+      if (state.index >= list.length) state.index = Math.max(0, list.length - 1);
+      const empty = list.length === 0;
+      $('card').style.display = empty ? 'none' : 'block';
+      $('empty').style.display = empty ? 'grid' : 'none';
+      $('position').textContent = empty ? '0' : state.index + 1;
+      $('total').textContent = list.length;
+      $('progressBar').style.width = empty ? '0%' : `${((state.index + 1) / list.length) * 100}%`;
+      $('prev').disabled = empty || list.length < 2;
+      $('next').disabled = empty || list.length < 2;
+      $('remember').disabled = empty;
+      if (empty) return;
+
+      const c = list[state.index];
+      $('card').classList.toggle('flipped', state.flipped);
+      $('moduleFront').textContent = labels[c.m];
+      $('moduleBack').textContent = labels[c.m];
+      $('priorityFront').textContent = c.hi ? '★ 高频' : '';
+      $('priorityBack').textContent = c.hi ? '★ 高频' : '';
+      $('topicFront').textContent = c.t;
+      $('question').textContent = c.q;
+      $('hint').textContent = c.h;
+      $('answer').textContent = c.a;
+      $('keywords').innerHTML = c.k.map(x => `<span>${x}</span>`).join('');
+      ['starFront','starBack'].forEach(id => {
+        $(id).innerHTML = starIcon;
+        $(id).classList.toggle('saved', state.saved.has(c.id));
+        $(id).setAttribute('aria-pressed', state.saved.has(c.id));
+      });
+      $('remember').textContent = state.learned.has(c.id) ? '已记住 ✓' : '记住了';
+      $('modeNote').textContent = state.view === 'review' ? `还有 ${list.length} 张待复习` : '点卡片查看推荐英文';
+    }
+
+    function move(step) {
+      const list = filtered();
+      if (!list.length) return;
+      state.index = (state.index + step + list.length) % list.length;
+      state.flipped = false;
+      render();
+    }
+
+    function current() { return filtered()[state.index]; }
+
+    function toggleStar(e) {
+      e.stopPropagation();
+      const c = current(); if (!c) return;
+      state.saved.has(c.id) ? state.saved.delete(c.id) : state.saved.add(c.id);
+      saveLocal(); render();
+    }
+
+    function setView(view) {
+      if (view === 'templates') { openSheet(); return; }
+      state.view = view; state.index = 0; state.flipped = false;
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+      render();
+    }
+
+    function openSheet() { $('sheet').classList.add('open'); $('backdrop').classList.add('open'); }
+    function closeSheet() { $('sheet').classList.remove('open'); $('backdrop').classList.remove('open'); }
+
+    renderFilters(); render();
+    $('filters').addEventListener('click', e => { const b=e.target.closest('[data-module]'); if(!b)return; state.module=Number(b.dataset.module); state.index=0; state.flipped=false; renderFilters(); render(); });
+    $('search').addEventListener('input', e => { state.query=e.target.value.trim().toLowerCase(); state.index=0; state.flipped=false; render(); });
+    $('highOnly').addEventListener('click', () => { state.high=!state.high; state.index=0; $('highOnly').classList.toggle('active',state.high); $('highOnly').setAttribute('aria-pressed',state.high); render(); });
+    $('card').addEventListener('click', e => { if(e.target.closest('.star')) return; state.flipped=!state.flipped; render(); });
+    $('card').addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();state.flipped=!state.flipped;render();} });
+    $('starFront').addEventListener('click',toggleStar); $('starBack').addEventListener('click',toggleStar);
+    $('prev').addEventListener('click',()=>move(-1)); $('next').addEventListener('click',()=>move(1));
+    $('remember').addEventListener('click',()=>{const c=current();if(!c)return;state.learned.add(c.id);saveLocal();if(state.view==='review'){state.flipped=false;render();}else render();});
+    $('shuffle').addEventListener('click',()=>{state.order=[...state.order].sort(()=>Math.random()-.5);state.index=0;state.flipped=false;render();});
+    document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
+    $('closeSheet').addEventListener('click',closeSheet); $('backdrop').addEventListener('click',closeSheet);
+    document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')move(-1);if(e.key==='ArrowRight')move(1);if(e.key==='Escape')closeSheet();});
+  </script>
+</body>
+</html>
