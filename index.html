@@ -94,22 +94,32 @@
     .card-stage { perspective: 1200px; min-height: 440px; }
     .card {
       position: relative; width: 100%; min-height: 440px; border-radius: var(--radius);
-      transform-style: preserve-3d; transition: transform .52s cubic-bezier(.2,.75,.2,1); cursor: pointer;
+      transform-style: preserve-3d; transform: translateZ(0); cursor: pointer;
       outline: none;
     }
-    .card.flipped { transform: rotateY(180deg); }
     .card-face {
       position: absolute; inset: 0; display: flex; flex-direction: column; padding: 22px;
       border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
       background:
         linear-gradient(145deg, rgba(18, 42, 72, .96), rgba(10, 28, 49, .98));
       box-shadow: var(--shadow); backface-visibility: hidden; -webkit-backface-visibility: hidden;
+      transition: transform .46s cubic-bezier(.2,.75,.25,1), opacity .16s ease;
     }
     .card-face::after {
       content: ""; position: absolute; width: 190px; height: 190px; right: -80px; bottom: -90px;
       border-radius: 50%; background: rgba(94, 234, 212, .06); pointer-events: none;
     }
-    .card-back { transform: rotateY(180deg); background: linear-gradient(145deg, #102a45, #0a2037); }
+    .card-front { transform: rotateY(0deg); opacity: 1; visibility: visible; pointer-events: auto; z-index: 2; }
+    .card-back {
+      transform: rotateY(180deg); opacity: 0; visibility: hidden; pointer-events: none; z-index: 1;
+      background: linear-gradient(145deg, #102a45, #0a2037);
+    }
+    .card.flipped .card-front {
+      transform: rotateY(-180deg); opacity: 0; visibility: hidden; pointer-events: none; z-index: 1;
+    }
+    .card.flipped .card-back {
+      transform: rotateY(0deg); opacity: 1; visibility: visible; pointer-events: auto; z-index: 2;
+    }
     .card-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; position: relative; z-index: 1; }
     .module-tag { color: var(--cyan); font-size: .76rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
     .priority { color: var(--amber); font-size: .76rem; font-weight: 750; }
