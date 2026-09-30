@@ -264,6 +264,7 @@
   </aside>
 
   <script src="concept-cards.js"></script>
+  <script src="onenote-cards.js"></script>
   <script>
     const coreCards = [
       {id:'m1-analytics',m:1,t:'Analytics types',q:'如何区分 descriptive、predictive 和 prescriptive analytics？',h:'过去、未来、行动',a:'Descriptive analytics explains what happened in the past. Predictive analytics estimates what may happen in the future. Prescriptive analytics compares possible actions and helps decide what to do.',k:['past','future','decision'],hi:1},
@@ -340,7 +341,7 @@
       {id:'m5-pdplimit',m:5,t:'PDP limitation',q:'predictors 高度相关时 PDP 有什么问题？',h:'不现实的变量组合',a:'If predictors are strongly correlated, the PDP may use unrealistic combinations of predictor values. The result should therefore be interpreted with care.',k:['correlated','unrealistic','care'],hi:1},
       {id:'m5-outlier',m:5,t:'Trees and outliers',q:'为什么树对 predictor outlier 相对稳健？',h:'基于排序和 split，但并非完全免疫',a:'Trees use split rules based mainly on the order of predictor values. An extreme value can often be isolated in a small node, but it may still create an unstable split.',k:['order','isolate','unstable split'],hi:0}
     ];
-    const cards = [...coreCards, ...conceptCards];
+    const cards = [...coreCards, ...conceptCards, ...oneNoteCards];
 
     const labels = {1:'M1 · Problem',2:'M2 · Data',3:'M3 · Transform',4:'M4 · GLM',5:'M5 · Trees',6:'其他'};
     const state = {
@@ -370,6 +371,7 @@
 
     function renderFilters() {
       const items = [[0,'全部'],[1,'M1'],[2,'M2'],[3,'M3'],[4,'M4 · GLM'],[5,'M5']];
+      if (cards.some(c => c.m === 6)) items.push([6,'其他']);
       $('filters').innerHTML = items.map(([value,label]) => `<button class="chip ${state.module===value?'active':''}" data-module="${value}">${label}</button>`).join('');
     }
 
@@ -391,7 +393,7 @@
       $('card').classList.toggle('flipped', state.flipped);
       $('moduleFront').textContent = labels[c.m];
       $('moduleBack').textContent = labels[c.m];
-      const badge = c.kind === 'concept' ? '概念题' : (c.hi ? '★ 高频' : '');
+      const badge = c.kind === 'concept' ? '概念题' : (c.kind === 'onenote' ? '题库考点' : (c.hi ? '★ 高频' : ''));
       $('priorityFront').textContent = badge;
       $('priorityBack').textContent = badge;
       $('topicFront').textContent = c.t;
